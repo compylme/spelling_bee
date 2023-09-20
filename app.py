@@ -1,29 +1,36 @@
-from flask import Flask
+from flask import Flask, jsonify
 import nltk
 from nltk.corpus import words
 import firebase_admin
 from firebase_admin import credentials, firestore
+from datetime import date, datetime
 
+# Initialize Flask app
+app = Flask(__name__)
+app.debug = True
+
+# Initialize NLTK words
+nltk.download('words')
+all_words = set(words.words())
+
+# Initialize Firebase Admin SDK
 cred = credentials.Certificate('service-account-key.json')
 firebase_admin.initialize_app(cred)
 
+startTimestamp = datetime(2023, 9, 18, 21, 45, 27, 60)
+formatted_date = startTimestamp.strftime("%b %d, %Y, %I:%M:%S.%f %p")
+
+# Initialize Firestore
 db = firestore.client()
-collection_ref = db.collection('spellingbee-letters-docker')
-docs = collection_ref.stream()
+query = db.collection('spellingbee-letters-docker') \
+    .order_by('timestamp').limit_to_last(1)
+docs = query.get()
+data_list = None
 
-app = Flask(__name__)
-app.debug = True \
 
-nltk.download('words')
-all_words = words.words()
-list_of_words = []
-list_of_letters = ['g','n','l','e','u','i','v']
+# Define global variables
+list_of_letters = []
 constant = 'v'
-word_values = None
-four_plus = []
-unwanted_words = []
-the_words = []
-doc_ids = []
 
 @app.route("/")
 def hello_world():
@@ -32,35 +39,53 @@ def hello_world():
 @app.route("/docs")
 def collection_data():
     for doc in docs:
-        doc_ids.append(doc.id)
+        data = doc.to_dict()
+        data_list = data
+        data_list.pop('timestamp')
+    return data_list
 
-    return doc_ids
+print(data_list)
 
-
+def order_letters(return_data):
+    for one in return_data:
+        for each in one['letters']:
+            list_of_letters.append(each)
+        for each in one['mandatory']:
+            constant = each
+    return list_of_letters
+    
 
 @app.route("/nltk")
-def math():
+def find_words():
+    
+    print('list of letters:'+ str(list_of_letters))
     list_dict = {letter: [] for letter in list_of_letters}
 
+    # Create a dictionary of words starting with each letter
     for word in all_words:
         if word[0] in list_of_letters:
             list_dict[word[0]].append(word)
 
-    for each in list_dict.values():
-        for word in each:
+    four_plus = []
+
+    # Find words containing the constant letter 'v'
+    for letter in list_of_letters:
+        for word in list_dict[letter]:
             if len(word) > 3 and constant in word:
                 four_plus.append(word)
 
+    unwanted_words = []
+
+    # Find words that contain letters not in the list_of_letters
     for word in four_plus:
         for letter in word:
             if letter not in list_of_letters:
                 unwanted_words.append(word)
 
-    set1 = set(four_plus)
-    set2 = set(unwanted_words)
+    # Calculate the difference
+    difference = list(set(four_plus) - set(unwanted_words))
 
-    difference = set1 - set2
-    
-    return str(difference)
+    return jsonify(difference)
 
-app.run()
+if __name__ == '__main__':
+    app.run()
