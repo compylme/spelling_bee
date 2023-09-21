@@ -50,13 +50,16 @@ def order_letters(return_data):
         for each in one['mandatory']:
             if each == '\n':
                 continue
-            constant=each
+            else:
+                constant= each
+        list_of_letters.append(constant)
     return list_of_letters, constant
 
 new_data = collection_data()
 print(new_data)
 fetched_data = order_letters(new_data)
-print(fetched_data)
+constant = fetched_data[1]
+print('fetched data is:' + str(fetched_data))
 
 @app.route("/nltk")
 def find_words():
@@ -87,8 +90,9 @@ def find_words():
 
     # Calculate the difference
     difference = list(set(four_plus) - set(unwanted_words))
+    return (difference)
 
-    return jsonify(difference)
+    
 
 if __name__ == '__main__':
     app.run()
