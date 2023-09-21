@@ -25,12 +25,10 @@ db = firestore.client()
 query = db.collection('spellingbee-letters-docker') \
     .order_by('timestamp').limit_to_last(1)
 docs = query.get()
-data_list = None
-
 
 # Define global variables
 list_of_letters = []
-constant = 'v'
+constant = ''
 
 @app.route("/")
 def hello_world():
@@ -38,22 +36,27 @@ def hello_world():
 
 @app.route("/docs")
 def collection_data():
+    data_list = []
     for doc in docs:
         data = doc.to_dict()
-        data_list = data
-        data_list.pop('timestamp')
+        data.pop('timestamp')
+        data_list.append(data)
     return data_list
-
-print(data_list)
 
 def order_letters(return_data):
     for one in return_data:
         for each in one['letters']:
             list_of_letters.append(each)
         for each in one['mandatory']:
-            constant = each
-    return list_of_letters
-    
+            if each == '\n':
+                continue
+            constant=each
+    return list_of_letters, constant
+
+new_data = collection_data()
+print(new_data)
+fetched_data = order_letters(new_data)
+print(fetched_data)
 
 @app.route("/nltk")
 def find_words():
