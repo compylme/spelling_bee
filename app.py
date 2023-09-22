@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
 import nltk
 from nltk.corpus import words
-import firebase_admin
-from firebase_admin import credentials, firestore
 from datetime import date, datetime
+from  helpers.my_functions import db_services, myTimezones
+from uuid import uuid4
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -13,18 +13,11 @@ app.debug = True
 nltk.download('words')
 all_words = set(words.words())
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate('service-account-key.json')
-firebase_admin.initialize_app(cred)
+myTimeStamp = myTimezones.ukTime()
 
-startTimestamp = datetime(2023, 9, 18, 21, 45, 27, 60)
-formatted_date = startTimestamp.strftime("%b %d, %Y, %I:%M:%S.%f %p")
-
-# Initialize Firestore
-db = firestore.client()
-query = db.collection('spellingbee-letters-docker') \
-    .order_by('timestamp').limit_to_last(1)
-docs = query.get()
+# Initialize Firestore DB
+db_connection = db_services()
+docs = db_services.get_data(db_connection)
 
 # Define global variables
 list_of_letters = []
@@ -51,7 +44,7 @@ def order_letters(return_data):
             if each == '\n':
                 continue
             else:
-                constant= each
+                constant = each
         list_of_letters.append(constant)
     return list_of_letters, constant
 
@@ -90,9 +83,10 @@ def find_words():
 
     # Calculate the difference
     difference = list(set(four_plus) - set(unwanted_words))
-    return (difference)
+    return (str(difference))
 
-    
+payload_data = {"timestamp": myTimeStamp , "words": find_words()}
 
 if __name__ == '__main__':
+    insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=str(uuid4()))
     app.run()
