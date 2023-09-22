@@ -26,7 +26,7 @@ class myTimezones:
 class db_services():
 
     def __init__(self):
-        cred = credentials.Certificate('service-account-key.json')
+        cred = credentials.Certificate('keys/service-account-key.json')
         firebase_admin.initialize_app(cred)
         self.db = firestore.client()
 
