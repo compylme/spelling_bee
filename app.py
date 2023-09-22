@@ -1,7 +1,6 @@
 from flask import Flask, jsonify
 import nltk
 from nltk.corpus import words
-from datetime import date, datetime
 from  helpers.my_functions import db_services, myTimezones
 from uuid import uuid4
 
