@@ -1,8 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask
 import nltk
 from nltk.corpus import words
 from  helpers.my_functions import db_services, myTimezones
 from uuid import uuid4
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -13,6 +17,7 @@ nltk.download('words')
 all_words = set(words.words())
 
 myTimeStamp = myTimezones.ukTime()
+formatted_date = myTimezones.anchorageTime()
 
 # Initialize Firestore DB
 db_connection = db_services()
@@ -84,8 +89,24 @@ def find_words():
     difference = list(set(four_plus) - set(unwanted_words))
     return (str(difference))
 
-payload_data = {"timestamp": myTimeStamp , "words": find_words()}
+payload_data = {"timestamp": formatted_date , "words": find_words()}
+
+
+all_db_docs =  db_services.check_db(db_connection)[0]
+print(all_db_docs)
+
+document_data = []
+for doc in all_db_docs:
+    document_data.append(doc)
+
+for i in range(len(document_data)):
+    for j in range(i +1, len(document_data)):
+        if document_data[i] == document_data[j]:
+            print(f"Duplicate found between Document {i + 1} and Document {j + 1}.")
+
+
 
 if __name__ == '__main__':
-    insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=str(uuid4()))
+    insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=formatted_date)
+
     app.run()
