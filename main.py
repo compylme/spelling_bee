@@ -1,8 +1,10 @@
 from flask import Flask
 from  helpers.my_functions import db_services, myTimezones
 import json
+from collections import defaultdict
 
-with open('data/words_dictionary.json', 'r') as json_file:
+
+with open('data/dict_words.json', 'r') as json_file:
     word_data = json.load(json_file)
 
 
@@ -61,10 +63,13 @@ def find_words():
     print('list of letters:'+ str(list_of_letters))
     list_dict = {letter: [] for letter in list_of_letters}
 
+    list_dict = defaultdict(list)
+
     # Create a dictionary of words starting with each letter
     for word in word_data:
-        if word[0] in list_of_letters:
-            list_dict[word[0]].append(word)
+        if word:
+            first_char = word[0]
+            list_dict[first_char].append(word)
 
     four_plus = []
 
@@ -100,6 +105,7 @@ for i in range(len(document_data)):
         if document_data[i] == document_data[j]:
             print(f"Duplicate found between Document {i + 1} and Document {j + 1}.")
 
+print(all_db_docs)
 
 
 if __name__ == '__main__':
