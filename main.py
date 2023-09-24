@@ -23,9 +23,9 @@ docs = db_services.get_data(db_connection)
 list_of_letters = []
 constant = ''
 
-@app.route("/")
-def hello_world():
-    return "Hello, :)</p>"
+# @app.route("/")
+# def hello_world():
+#     return "Hello, :)</p>"
 
 @app.route("/docs")
 def collection_data():
@@ -57,7 +57,7 @@ try:
 except Exception as e:
     print('An error occured', str(e))
 
-@app.route("/solved")
+@app.route("/")
 def find_words():
     
     print('list of letters:'+ str(list_of_letters))
