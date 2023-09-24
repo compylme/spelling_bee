@@ -1,20 +1,14 @@
 from flask import Flask
-import nltk
-from nltk.corpus import words
 from  helpers.my_functions import db_services, myTimezones
-from uuid import uuid4
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+import json
+
+with open('data/words_dictionary.json', 'r') as json_file:
+    word_data = json.load(json_file)
 
 
 # Initialize Flask app
 app = Flask(__name__)
 app.debug = True
-
-# Initialize NLTK words
-nltk.download('words')
-all_words = set(words.words())
 
 myTimeStamp = myTimezones.ukTime()
 formatted_date = myTimezones.anchorageTime()
@@ -52,20 +46,23 @@ def order_letters(return_data):
         list_of_letters.append(constant)
     return list_of_letters, constant
 
-new_data = collection_data()
-print(new_data)
-fetched_data = order_letters(new_data)
-constant = fetched_data[1]
-print('fetched data is:' + str(fetched_data))
+try:
+    new_data = collection_data()
+    print(new_data)
+    fetched_data = order_letters(new_data)
+    constant = fetched_data[1]
+    print('fetched data is:' + str(fetched_data))
+except Exception as e:
+    print('An error occured', str(e))
 
-@app.route("/nltk")
+@app.route("/solved")
 def find_words():
     
     print('list of letters:'+ str(list_of_letters))
     list_dict = {letter: [] for letter in list_of_letters}
 
     # Create a dictionary of words starting with each letter
-    for word in all_words:
+    for word in word_data:
         if word[0] in list_of_letters:
             list_dict[word[0]].append(word)
 
@@ -93,7 +90,6 @@ payload_data = {"timestamp": formatted_date , "words": find_words()}
 
 
 all_db_docs =  db_services.check_db(db_connection)[0]
-print(all_db_docs)
 
 document_data = []
 for doc in all_db_docs:
