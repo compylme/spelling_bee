@@ -105,6 +105,8 @@ for i in range(len(document_data)):
         if document_data[i] == document_data[j]:
             print(f"Duplicate found between Document {i + 1} and Document {j + 1}.")
 
+
+insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=formatted_date)
 print(all_db_docs)
 
 
