@@ -1,0 +1,2 @@
+Naming convention for google cloud scheduler jobs
+https://[REGION]-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/[NAMESPACE]/jobs/[JOB_NAME]:run
