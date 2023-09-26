@@ -3,7 +3,6 @@ from  helpers.my_functions import db_services, myTimezones
 import json
 from collections import defaultdict
 
-
 with open('data/dict_words.json', 'r') as json_file:
     word_data = json.load(json_file)
 
@@ -108,8 +107,7 @@ for i in range(len(document_data)):
 
 insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=formatted_date)
 print(all_db_docs)
-
-
+        
 if __name__ == '__main__':
     insert_my_data = db_services.insert_data(db_connection, insert_collection = 'spellingbee-found-words',payload = payload_data, document_id=formatted_date)
 
